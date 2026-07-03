@@ -2,7 +2,7 @@
 Experimental setup for ERC-4337 Environment Tests used in ISEEE 2025 paper evaluation of ERC-4337 Bundler Power Consumption
 
 This is a guide for setting up an experimental playground for testing an ERC-4337 bundler.\
-It was used for monitoring a bundler for its power consumption in measurements conducted for the work in [An Introductory Study on the Power Consumption Overhead of ERC-4337 Bundlers](https://arxiv.org/abs/2511.16890) ISEEE 2025 paper.\ 
+It was used for monitoring a bundler for its power consumption in measurements conducted for the work in [An Introductory Study on the Power Consumption Overhead of ERC-4337 Bundlers](https://arxiv.org/abs/2511.16890) ISEEE 2025 paper.\
 It simulates a feed of ERC-4337 UserOps for transfering ERC-20 tokens between some sets of addresses, via a Bundler and all the ERC-4337 infrastructure. 
 
 It uses mainly the following tools, which require installation/setup (some indications below):
@@ -11,6 +11,9 @@ It uses mainly the following tools, which require installation/setup (some indic
 - [Anvil (from the Foundry package)](https://github.com/foundry-rs/foundry?tab=readme-ov-file) as blockchain backend simulator
 - [Alto (Pimlico)](https://github.com/pimlicolabs/alto) as the tested ERC-4337 bundler
 - [SmartWatts](https://powerapi.org/reference/formulas/smartwatts/) for the power consumption measurements
+
+The current setup assumes running everything on the same machine. Therefore, localhost (127.0.0.1), is often used as address in various scripts. Replace this according to changes.\
+In particular, in a server setting, Anvil and Alto, should probably run on the server side, and deployment, transaction sending, and other operations should use the server address. 
 
 ## (Optional) Configuration of Blockscout
 
@@ -22,23 +25,25 @@ The options can normally be set as:\
 Blockscout should be further started together with Anvil, for monitoring the produced blocks. It is recommended to start it before Anvil and stop it after stopping Anvil to avoid desyncing issues. This is typically done via docker compose (start and stop):\
 `docker-compose -f anvil.yml up -d`
 `docker-compose down -v`
-Note that use of Blockscout is optional altogether.
+Note that use of Blockscout is optional altogether.\
 Update: [Anvil Explorer](https://github.com/sigworld/anvil-explorer) is a less problematic block explorer alternative.
 
 ## Running Anvil
 
 To run Anvil as the blockchain simulator, after installing a typical command is as follows (with persistent state storage):\
-`anvil --port 8545 --host 0.0.0.0 --chain-id 1337 --block-time 15 --gas-limit 30000000 --gas-price 1 --load-state my_state.json --dump-state my_state.json --disable-code-size-limit`
+`anvil --port 8545 --host 0.0.0.0 --chain-id 1337 --block-time 15 --gas-limit 30000000 --gas-price 1 --block-base-fee-per-gas 0 --disable-min-priority-fee --load-state /var/lib/anvil/state.json --dump-state /var/lib/anvil/state.json --disable-code-size-limit`
 
 Parameters can be adjusted upon need. Note that that --load-state expects a state file and should be ommitted at first run. 
 
 ## Deploying necessary contracts
 
-Running an ERC-4337 environment in a private playground needs the deployment of an ERC-4337 EntryPoint contract and of a factory for smart accounts creation on the local simulated chain. The 0.6 versions of the above contracts can be loaded in Remix via the *EPLoader.sol* file provided in this repo. These can be compiled and deployed to the Anvil network. Note that further minor adjustment in the sources might be needed in order to acccomodate changes with newer versions, depending on the compiler used.  
+Running an ERC-4337 environment in a private playground needs the deployment of an ERC-4337 EntryPoint contract and of a factory for smart accounts creation on the local simulated chain. The 0.6 versions of the above contracts can be loaded in [Remix](http://remix.ethereum.org) via the *EPLoader.sol* file provided in this repo. These can be compiled and deployed to the Anvil network. Note that further minor adjustment in the sources might be needed in order to acccomodate changes with newer versions, depending on the compiler used.\  
+Update: The 0.7 versions of EntryPoint and SimpleAccountFactory are currently the most popular. These can be loaded by simply changing the 0.6 version to 0.7 in the *EPLoader.sol*.\
+Note: To connect Remix to a locally hosted Anvil network for contract deployment, some browsers, e.g., Firefox, might require specifically allowing permissions for the Remix URL to access local network devices. These should be configurable via browser settings.
 
 An ERC-20 token contract, the provided *TestToken.sol*, should also be deployed as final destination for the transactions generated from the UserOps feed. 
 
-After these deployments, a number of smart account contracts (SCAs) nshould be created to act as the UserOps validators and proxys further to the *TestToken.sol*. These should also be funded to act as sponsors for the transactions.\ 
+After these deployments, a number of smart account contracts (SCAs) should be created to act as the UserOps validators and proxys further to the *TestToken.sol*. These should also be funded to act as sponsors for the transactions.\ 
 A test account address from the set generated by Anvil, is pre-allocated with test Ether, and can create, own and use in parallel multiple SCAs, as long as for each configures a different salt.\
 A bash script that does this for the first 10 owner test accounts from Anvil is given in *createAccounts* on this repository. 
 Usage is by providing the salt and Ether to transfer (optional), e.g.:\
@@ -49,11 +54,19 @@ The created SCAs are dumped in a file saved using the naming scheme *created_acc
 
 The Alto bundler requires adjusting its configuration in *alto-config.json* to match the address of the deployed EntryPoint contract and set some sponsor address private keys for funding from the Anvil generated addressed. A typical configuration looks like this:\
 `{
-    "entrypoints": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    "executor-private-keys": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80,0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+    "rpc-url": "http://127.0.0.1:8545",
+    "port": 3000,
+    "executor-private-keys": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80,0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f>
     "utility-private-key": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-    "rpc-url": "http://localhost:8545",
-    "safe-mode": false
+    "entrypoints": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "safe-mode": false,
+    "enforce-unique-senders-per-bundle": false,
+    "max-gas-per-bundle": "30000000",
+    "fixed-gas-limit-for-estimation": "30000000",
+    "bundler-initial-comission": "0",
+    "block-time": 15000,
+    "gas-price-bump": 1,
+    "log-level": "info"
 }`
 
 Running Alto afterwards can be done by:\
