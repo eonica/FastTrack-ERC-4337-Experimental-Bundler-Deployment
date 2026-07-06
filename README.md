@@ -128,7 +128,7 @@ Then, the monitoring can be started using a command line as follows (pay attenti
 
 `docker run --rm  --net=host --privileged --pid=host -v /sys:/sys -v /var/lib/docker/containers:/var/lib/docker/containers:ro -v $(pwd)/sensor_output:/tmp/sensor_output -v $(pwd):/srv -v $(pwd)/config_file.json:/config_file.json powerapi/hwpc-sensor --config-file /config_file.json`
 
-In order to capture the monitored consumption per process, the target processes should be run in transient scope units leveraging cgroups separation. These should be normally part of the user.slice. You can check information on their cgroups association using:\ 
+In order to capture the monitored consumption per process, the target processes should be run in transient scope units leveraging cgroups separation. These should be normally part of the user.slice. You can check information on their cgroups association using:\
 `systemd-cgls
 ls /sys/fs/cgroup`
 
@@ -137,7 +137,7 @@ And to effectively run in transient scoped mode:\
 
 `systemd-run --scope --slice=user.slice --unit=alto ./alto run --config "alto-config.json" --port 3000`
 
-After the 1) monitoring is done, 2) is just a matter of computing the final results based on the gathered data. This can be executed in the folder where the measurements were stored with (the outputs will be stored in a *swatts* folder):\ 
+After the 1) monitoring is done, 2) is just a matter of computing the final results based on the gathered data. This can be executed in the folder where the measurements were stored with (the outputs will be stored in a *swatts* folder):\
 
 `python3 -m smartwatts \
 --input csv --model HWPCReport --files core.csv,msr.csv,rapl.csv --name puller_csv \
