@@ -8,8 +8,8 @@ import fs from "fs";
 // -----------------------------
 // Configuration
 // -----------------------------
-const CHAIN_RPC = "http://10.100.33.124:8545";     // Anvil
-const BUNDLER_RPC = "http://10.100.33.124:3000";   // Alto bundler
+const CHAIN_RPC = "http://127.0.0.1:8545";     // Anvil
+const BUNDLER_RPC = "http://127.0.0.1:3000";   // Alto bundler
 
 const ENTRYPOINT = {
   address: "0x5FbDB2315678afecb367f032d93F642f64180aa3" as `0x${string}`,
