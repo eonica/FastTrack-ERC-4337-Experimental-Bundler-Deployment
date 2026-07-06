@@ -9,25 +9,26 @@ if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
   exit 1
 fi
 
-SALT="$1"
+BASE_SALT="$1"
 AMOUNT="${2:-}"  # optional amount of ether
 
 # ==== CONFIGURATION ====
 RPC_URL="http://127.0.0.1:8545"
 FACTORY="0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+ACCOUNTS_PER_OWNER=10
 
 # Owners + their private keys (same index)
 OWNERS=(
-  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 
-  0x70997970C51812dc3A010C7d01b50e0d17dc79C8 
-  0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC 
-  0x90F79bf6EB2c4f870365E785982E1f101E93b906 
-  0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 
-  0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc 
-  0x976EA74026E726554dB657fA54763abd0C3a0aa9 
-  0x14dC79964da2C08b23698B3D3cc7Ca32193d9955 
-  0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f 
-  0xa0Ee7A142d267C1f36714E4a8F75612F20a79720 
+  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+  0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+  0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+  0x90F79bf6EB2c4f870365E785982E1f101E93b906
+  0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65
+  0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc
+  0x976EA74026E726554dB657fA54763abd0C3a0aa9
+  0x14dC79964da2C08b23698B3D3cc7Ca32193d9955
+  0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f
+  0xa0Ee7A142d267C1f36714E4a8F75612F20a79720
 )
 
 OWNER_KEYS=(
@@ -43,44 +44,113 @@ OWNER_KEYS=(
   0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6
 )
 
-# File to store deployed addresses
-OUTPUT_FILE="created_accounts_salt_${SALT}.txt"
-> "$OUTPUT_FILE"
+# ==== OUTPUT FILES ====
+SAFE_SALT="${BASE_SALT//[^a-zA-Z0-9_]/_}"
+
+TXT_OUTPUT_FILE="created_accounts_salt_${SAFE_SALT}.txt"
+JSON_OUTPUT_FILE="created_accounts_salt_${SAFE_SALT}.json"
+TMP_DIR="$(mktemp -d)"
+
+cleanup() {
+  rm -rf "$TMP_DIR"
+}
+trap cleanup EXIT
+
+> "$TXT_OUTPUT_FILE"
+
+# ==== VALIDATION ====
+if [ "${#OWNERS[@]}" -ne "${#OWNER_KEYS[@]}" ]; then
+  echo "OWNERS and OWNER_KEYS arrays must have the same length"
+  exit 1
+fi
+
+# Convert a salt-like input to decimal, then offset it per account.
+# Examples:
+#   10   -> 10
+#   0x0A -> 10
+salt_for_index() {
+  local base="$1"
+  local offset="$2"
+
+  if [[ "$base" == 0x* || "$base" == 0X* ]]; then
+    printf "%d" "$((16#${base:2} + offset))"
+  else
+    printf "%d" "$((base + offset))"
+  fi
+}
+
+create_accounts_for_owner() {
+  local owner_index="$1"
+  local owner="${OWNERS[$owner_index]}"
+  local key="${OWNER_KEYS[$owner_index]}"
+  local owner_output="$TMP_DIR/owner_${owner_index}.txt"
+
+  > "$owner_output"
+
+  for account_index in $(seq 0 $((ACCOUNTS_PER_OWNER - 1))); do
+    # Unique salt per owner/account pair.
+    local salt
+    salt="$(salt_for_index "$BASE_SALT" $((owner_index * ACCOUNTS_PER_OWNER + account_index)))"
+
+    echo "Creating account $((account_index + 1))/$ACCOUNTS_PER_OWNER for owner $owner with salt $salt..."
+
+    TX_HASH=$(
+      cast send "$FACTORY" "createAccount(address,uint256)" "$owner" "$salt" \
+        --private-key "$key" \
+        --rpc-url "$RPC_URL" \
+        --json | jq -r '.transactionHash'
+    )
+
+    echo "Waiting for tx $TX_HASH..."
+
+    CREATED_ADDR=$(
+      cast call "$FACTORY" "createAccount(address,uint256)(address)" "$owner" "$salt" \
+        --rpc-url "$RPC_URL"
+    )
+
+    echo "Created account for $owner at: $CREATED_ADDR"
+
+    echo "\"$CREATED_ADDR\"" >> "$owner_output"
+
+    if [ -n "$AMOUNT" ]; then
+      echo "Sending $AMOUNT from $owner to $CREATED_ADDR..."
+
+      cast send "$CREATED_ADDR" \
+        --value "$AMOUNT" \
+        --private-key "$key" \
+        --rpc-url "$RPC_URL"
+
+      echo "Sent $AMOUNT to $CREATED_ADDR"
+    fi
+
+    echo
+  done
+}
 
 # ==== EXECUTION ====
+pids=()
+
 for i in "${!OWNERS[@]}"; do
-  OWNER="${OWNERS[$i]}"
-  KEY="${OWNER_KEYS[$i]}"
-
-  echo "Creating account for owner $OWNER with salt $SALT..."
-
-  # Send tx to create account
-  TX_HASH=$(cast send "$FACTORY" "createAccount(address,uint256)" "$OWNER" "$SALT" \
-    --private-key "$KEY" \
-    --rpc-url "$RPC_URL" \
-    --json | jq -r '.transactionHash')
-
-  echo "⏳ Waiting for tx $TX_HASH..."
-
-  # Simulate call to get the created account address
-  CREATED_ADDR=$(cast call "$FACTORY" "createAccount(address,uint256)(address)" "$OWNER" "$SALT" \
-    --rpc-url "$RPC_URL")
-
-  echo "✅ Created account for $OWNER at: $CREATED_ADDR"
-
-  echo "\"$CREATED_ADDR\"," >> "$OUTPUT_FILE"
-
-  # ==== OPTIONAL: Send ether to the newly created account ====
-  if [ -n "$AMOUNT" ]; then
-    echo "Sending $AMOUNT from $OWNER to $CREATED_ADDR..."
-    cast send "$CREATED_ADDR" \
-      --value "$AMOUNT" \
-      --private-key "$KEY" \
-      --rpc-url "$RPC_URL"
-    echo "✅ Sent $AMOUNT to $CREATED_ADDR"
-  fi
-
-  echo
+  create_accounts_for_owner "$i" &
+  pids+=("$!")
 done
 
-echo "🎉 All accounts processed. Results stored in $OUTPUT_FILE"
+for pid in "${pids[@]}"; do
+  wait "$pid"
+done
+
+# Merge owner outputs deterministically by owner order.
+for i in "${!OWNERS[@]}"; do
+  cat "$TMP_DIR/owner_${i}.txt" >> "$TXT_OUTPUT_FILE"
+done
+
+# Create JSON array from the text file.
+{
+  echo "["
+  awk '{ printf "%s%s", (NR == 1 ? "  " : ",\n  "), $0 } END { print "" }' "$TXT_OUTPUT_FILE"
+  echo "]"
+} > "$JSON_OUTPUT_FILE"
+
+echo "All accounts processed."
+echo "Text output: $TXT_OUTPUT_FILE"
+echo "JSON output: $JSON_OUTPUT_FILE"
