@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ==== CONFIGURATION ====
-RPC_URL="http://10.100.33.124:8545"
+RPC_URL="http://127.0.0.1:8545"
 RECIPIENTS_FILE="${1:-recipients.txt}"
 
 # ERC-20 token contract
