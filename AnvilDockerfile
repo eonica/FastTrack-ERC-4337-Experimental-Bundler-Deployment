@@ -1,0 +1,34 @@
+Create /opt/powerexp/anvil/Dockerfile:
+
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    bash \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="/root/.foundry/bin:${PATH}"
+
+RUN curl -L https://foundry.paradigm.xyz | bash
+
+RUN /root/.foundry/bin/foundryup
+
+EXPOSE 8545
+
+ENTRYPOINT ["anvil"]
+
+CMD [ \
+  "--host", "0.0.0.0", \
+  "--port", "8545", \
+  "--chain-id", "1337", \
+  "--block-time", "15", \
+  "--gas-limit", "30000000", \
+  "--gas-price", "1", \
+  "--block-base-fee-per-gas", "0", \
+  "--disable-min-priority-fee", \
+  "--load-state", "/var/lib/anvil/state.json", \
+  "--dump-state", "/var/lib/anvil/state.json", \
+  "--disable-code-size-limit" \
+]
