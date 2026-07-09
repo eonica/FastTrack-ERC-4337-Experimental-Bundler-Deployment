@@ -87,6 +87,27 @@ The Alto bundler requires adjusting its configuration in *alto-config.json* to m
 Running Alto afterwards can be done by:\
 `./alto run --config "alto-config.json" --port 3000`
 
+## Encapsulating Anvil and Alto in Docker Containers
+
+Both Anvil and Alto can be run as well in Docker containers. This can provide portability, and allows measuring the power consumption at container level granularity (albeit including as the container overhead). 
+The prerequisite for this is the installation of [Docker Engine](https://docs.docker.com/engine/install/) on the test machine.
+Following a Docker network should be set up to permit the Anvil-Alto intercommunication:\
+`docker network create aa-exp || true`\
+Using the following configuration, this will let Alto reach Anvil as *http://anvil:8545*.
+
+For building the necessary Docker images, two Dockerfiles are provided in the respective folders in the repository for Anvil and Alto, respectively.
+In case of Anvil, it is required to maintain and map the simulated network state in *state.json* from the local file system to the Docker image (paths should be adapted according to local configuration). An effective clean build is executed as follows in the folder hosting the Dockerfile:\
+`docker build --no-cache --progress=plain -t anvil-debian-slim:local -f AnvilDockerfile .`\
+For running Anvil under Docker with console output (switch the -it flags to -d for detached mode):\
+`docker run --rm -it --name anvil --network aa-exp -v /localhost/path/to/state.json:/var/lib/anvil/state.json -p 8545:8545 anvil-debian-slim:local`
+
+Alto requires loading *alto-config.json* by the Docker image (similarly to above, paths should reflect local configuration). The build is similar to Anvil, executing the following in the folder hosting the Dockerfile:\
+`docker build --no-cache --progress=plain -t alto-debian-slim:local -f AltoDockerfile .`\
+For running Alto under Docker with console output (switch the -it flags to -d for detached mode):\
+`docker run --rm -it --name alto --network aa-exp -p 3000:3000 alto-debian-slim:local`
+
+Running as above, both Anvil and Alto expose the ports, and are accessible directly on the IP address of the host running the Docker containers. 
+
 ## Running the UserOps feed
 
 The UserOps feed will perform token transfers between SCAs in rounds, in a back-and-forth manner, where first half of the SCAs will transfer tokens to the second half of the SCAs and the second half to the first half (i.e., for 100 SCAs, 1st SCA will transfer to 100th, the 100th to 1st; 2nd SCA will transfer to the 99th, the 99th to the 2nd, etc.).\
