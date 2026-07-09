@@ -107,6 +107,8 @@ For running Alto under Docker with console output (switch the -it flags to -d fo
 `docker run --rm -it --name alto --network aa-exp -p 3000:3000 alto-debian-slim:local`
 
 Running as above, both Anvil and Alto expose the ports, and are accessible directly on the IP address of the host running the Docker containers. 
+If run in detached mode, to stop the containers:\
+`docker stop anvil|alto`
 
 ## Running the UserOps feed
 
