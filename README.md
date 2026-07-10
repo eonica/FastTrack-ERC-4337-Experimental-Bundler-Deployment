@@ -46,6 +46,9 @@ For the SmartWatts analysis API the following installation is required (use sudo
 `pip install "powerapi[hwpc,csv]"`\
 `deactivate`
 
+Note: The powerexp/results/config_file.json includes the configuration for the power consumption measurement. This is hardware architecture dependent. 
+It should be checked if the configuration complies with the Group Events in the Usage section here: https://powerapi.org/reference/sensors/hwpc-sensor/ and adapted accordingly (rapl, msr and core events).  
+
 ## Setup the client machine
 
 Copy the test_scripts folder on the client machine. 
