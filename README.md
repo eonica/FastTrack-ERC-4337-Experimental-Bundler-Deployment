@@ -3,7 +3,9 @@
 The following steps assume two machines:
 
 1. The server where Anvil and Alto will run, and power consumption will be measured using SmartWatts
-2. A client machine (preferably a VM on the server), which will be used as control plane for starting the services on the server and to run the tests. 
+2. A client machine (preferably a VM on the server), which will be used as control plane for starting the services on the server and to run the tests.
+
+This fast track setup assumes a pre-deployment of all needed contracts: EntryPoint, the smart accounts factory contract, an ERC-20 token contract, a set of smart contract accounts (SCAs). Also the SCAs are pre-funded with both Ether (for paying transactions' cost) and ERC-20 tokens (for transferring in the effective transaction load). This pre-deployment is provided in the state.json file, loaded by Anvil. It is recommended to back this up periodically, because running the tests results in persistent changes and increases the file size. 
 
 ## Setup the server contents 
 
@@ -51,8 +53,24 @@ Copy the test_scripts folder on the client machine.
 Install [node.js](https://nodejs.org/en/download) on the client machine.\
 Additional prerequisites might be needed, e.g.,`npm install typescript` and `npm install --save-dev @types/node`. The full package information is available in package.json. 
 
-Note: In the test_scripts folder there is a helper_scripts folder. This includes several bash scripts, which normally should not be required, but could be used for creating additional smart contract accounts and financing these. Also the current repo includes a contracts folder, which holds the source for the ERC-20 token. This is already deployed on the state that was copied in the above steps on the server. 
+In the .ts scripts replace the localhost address with the server address.
 
+The script has various hardcoded parameters that can be configured, like:
 
+- the number and addresses of the SCAs (loaded from the created_accounts_salt_0x0A.json file)
+- the throttle time per round of messages
+- the total number of rounds
+
+Note: In the test_scripts folder there is a helper_scripts folder. This includes several bash scripts, which normally should not be required, but could be used for creating smart contract accounts and financing these. Also the current repo includes a contracts folder, which holds the source for the ERC-20 token. This is already deployed on the state that was copied in the above steps on the server. 
 
 ## Run the test workflow
+
+The test workflow is included in runTests.sh. This first transpiles the .ts scripts to .js.\
+Then it starts the Anvil and Alto docker containers on the server and their power consumption monitoring.\ 
+This is executed via ssh, which should be configured to access the server (change server_host to the server address and provide an authentication, via password or private/public key).\
+The UserOps load is afterwards sent from the client machine by running the transferUserOpRoundsThrottled.js .\
+Finally, the containers are stopped and another script is executed on the server (process.sh), to process the resulting measurements and pack these into a smart_watts.tar.gz file.
+
+
+
+
