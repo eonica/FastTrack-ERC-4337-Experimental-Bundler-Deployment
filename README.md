@@ -9,7 +9,7 @@ This fast track setup assumes a pre-deployment of all needed contracts: EntryPoi
 
 ## Setup the server contents 
 
-Copy the powerexp folder on the server's /opt/ directory.
+Copy the *powerexp* folder on the server's */opt/* directory (use other path if prefered, but this might be present in some scripts).
 
 ## Build the docker images on the server
 
@@ -46,33 +46,34 @@ For the SmartWatts analysis API the following installation is required (use sudo
 `pip install "powerapi[hwpc,csv]"`\
 `deactivate`
 
-Note: The powerexp/results/config_file.json includes the configuration for the power consumption measurement. This is hardware architecture dependent. 
+Note: The *powerexp/results/config_file.json* includes the configuration for the power consumption measurement. This is hardware architecture dependent. 
 It should be checked if the configuration complies with the Group Events in the Usage section here: https://powerapi.org/reference/sensors/hwpc-sensor/ and adapted accordingly (rapl, msr and core events).  
 
 ## Setup the client machine
 
-Copy the test_scripts folder on the client machine. 
+Copy the *test_scripts* folder on the client machine. 
 
 Install [node.js](https://nodejs.org/en/download) on the client machine.\
-Additional prerequisites might be needed, e.g.,`npm install typescript` and `npm install --save-dev @types/node`. The full package information is available in package.json. 
+Additional prerequisites might be needed, e.g.,`npm install typescript` and `npm install --save-dev @types/node`. The full package information is available in *package.json*. 
 
 In the .ts scripts replace the localhost address with the server address.
 
 The script has various hardcoded parameters that can be configured, like:
 
-- the number and addresses of the SCAs (loaded from the created_accounts_salt_0x0A.json file)
+- the number and addresses of the SCAs (loaded from the *created_accounts_salt_0x0A.json* file)
 - the throttle time per round of messages
 - the total number of rounds
 
-Note: In the test_scripts folder there is a helper_scripts folder. This includes several bash scripts, which normally should not be required, but could be used for creating smart contract accounts and financing these. Also the current repo includes a contracts folder, which holds the source for the ERC-20 token. This is already deployed on the state that was copied in the above steps on the server. 
+Note: In the *test_scripts* folder there is a *helper_scripts* folder. This includes several bash scripts, which normally should not be required, but could be used for creating smart contract accounts and financing these. Also the current repo includes a contracts folder, which holds the source for the ERC-20 token. This is already deployed on the state that was copied in the above steps on the server. 
 
 ## Run the test workflow
 
-The test workflow is included in runTests.sh. This first transpiles the .ts scripts to .js.\
+The test workflow is included in *runTests.sh*. This first transpiles the .ts scripts to .js.\
 Then it starts the Anvil and Alto docker containers on the server and their power consumption monitoring.\ 
 This is executed via ssh, which should be configured to access the server (change server_host to the server address and provide an authentication, via password or private/public key).\
-The UserOps load is afterwards sent from the client machine by running the transferUserOpRoundsThrottled.js .\
-Finally, the containers are stopped and another script is executed on the server (process.sh), to process the resulting measurements and pack these into a smart_watts.tar.gz file.
+The UserOps load is afterwards sent from the client machine by running the *transferUserOpRoundsThrottled.js* .\
+Finally, the containers are stopped and another script is executed on the server (process.sh), to process the resulting measurements and pack these into a *smart_watts.tar.gz* file.
+This file includes the data for plotting and should be fetched from the server.
 
 
 
