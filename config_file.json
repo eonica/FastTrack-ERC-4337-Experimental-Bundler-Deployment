@@ -8,7 +8,7 @@
   },
   "system": {
     "rapl": {
-      "events": ["RAPL_ENERGY_PKG"],
+      "events": ["RAPL_ENERGY_PKG","RAPL_ENERGY_DRAM"],
       "monitoring_type": "MONITOR_ONE_CPU_PER_SOCKET"
     },
     "msr": {
@@ -18,8 +18,6 @@
   "container": {
     "core": {
       "events": [
-        "CPU_CLK_THREAD_UNHALTED:REF_P",
-        "CPU_CLK_THREAD_UNHALTED:THREAD_P",
         "LLC_MISSES",
         "INSTRUCTIONS_RETIRED"
       ]
