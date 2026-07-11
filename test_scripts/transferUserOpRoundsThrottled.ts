@@ -10,6 +10,7 @@ import fs from "fs";
 // -----------------------------
 const CHAIN_RPC = "http://127.0.0.1:8545";     // Anvil
 const BUNDLER_RPC = "http://127.0.0.1:3000";   // Alto bundler
+const CONFIRMED_BLOCKS_LOG_FILE = "./confirmed_blocks.csv";
 
 const ENTRYPOINT = {
   address: "0x5FbDB2315678afecb367f032d93F642f64180aa3" as `0x${string}`,
@@ -23,7 +24,7 @@ const SCA_NUMBER = 100;
 const THROTTLE_TIME = 25;
 
 // rounds of transfers
-const ROUNDS_TOTAL = 1;
+const ROUNDS_TOTAL = 3;
 
 const SCAS_PER_OWNER = 10;
 
@@ -113,7 +114,8 @@ async function runRound(
   round: number,
   bundlerClient: any,
   simpleAccounts: any[],
-  calldatas: string[]
+  calldatas: string[],
+  confirmedBlocks: Set<bigint>
 ) {
   console.log(`\n================ ROUND ${round} START ================`);
 
@@ -167,6 +169,8 @@ async function runRound(
         hash: userOpHash,
       });
 
+      confirmedBlocks.add(receipt.receipt.blockNumber);
+
       console.log(
         `[Round ${round}] UserOperation #${i + 1} confirmed in block ${receipt.receipt.blockNumber}!`
       );
@@ -194,6 +198,43 @@ async function runRound(
   });
 }
 
+async function dumpConfirmedBlocks(
+  publicClient: any,
+  confirmedBlocks: Set<bigint>
+) {
+  const blockNumbers = [...confirmedBlocks].sort((a, b) =>
+    a < b ? -1 : a > b ? 1 : 0
+  );
+
+  const blocks = await Promise.all(
+    blockNumbers.map((blockNumber) =>
+      publicClient.getBlock({ blockNumber })
+    )
+  );
+
+  const lines = [
+    "block_number,timestamp,timestamp_iso",
+    ...blocks.map((block) => {
+      const timestampSeconds = block.timestamp;
+      const timestampIso = new Date(
+        Number(timestampSeconds) * 1000
+      ).toISOString();
+
+      return `${block.number},${timestampSeconds},${timestampIso}`;
+    }),
+  ];
+
+  fs.writeFileSync(
+    CONFIRMED_BLOCKS_LOG_FILE,
+    `${lines.join("\n")}\n`,
+    "utf8"
+  );
+
+  console.log(
+    `Logged ${blocks.length} confirmed blocks to ${CONFIRMED_BLOCKS_LOG_FILE}`
+  );
+}
+
 // -----------------------------
 // Main
 // -----------------------------
@@ -219,10 +260,16 @@ async function main() {
   const simpleAccounts = await prepareAccounts(publicClient);
   const calldatas = prepareCalldata();
 
+  // Unique blocks containing at least one confirmed UserOperation.
+  const confirmedBlocks = new Set<bigint>();
+
   // Run N rounds sequentially
   for (let round = 1; round <= ROUNDS_TOTAL; round++) {
-    await runRound(round, bundlerClient, simpleAccounts, calldatas);
+    await runRound(round, bundlerClient, simpleAccounts, calldatas, confirmedBlocks);
   }
+
+  // Perform block lookups and disk I/O only after the workload finishes.
+  await dumpConfirmedBlocks(publicClient, confirmedBlocks);
 
   console.log("\n=== All rounds finished ===");
   process.exit(0);

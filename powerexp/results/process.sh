@@ -18,5 +18,6 @@ deactivate
 cd ..
 
 mv container_ids.txt ./sensor_output/
+cp config_file.json ./sensor_output/
 tar -czf smart_watts.tar.gz sensor_output
 

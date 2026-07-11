@@ -70,10 +70,11 @@ Note: In the *test_scripts* folder there is a *helper_scripts* folder. This incl
 ## Run the test workflow
 
 The test workflow is included in *runTests.sh*. This first transpiles the .ts scripts to .js.\
-Then it starts the Anvil and Alto docker containers on the server and their power consumption monitoring.\ 
+Then it starts the Anvil and Alto docker containers on the server and their power consumption monitoring (*measure.sh*).\ 
 This is executed via ssh, which should be configured to access the server (change server_host to the server address and provide an authentication, via password or private/public key).\
 The UserOps load is afterwards sent from the client machine by running the *transferUserOpRoundsThrottled.js* .\
-Finally, the containers are stopped and another script is executed on the server (process.sh), to process the resulting measurements and pack these into a *smart_watts.tar.gz* file.
+The confirmed blocks and their timestamps are logged on the client machine. The log is uploaded to the server via scp to be packed with the rest of the measurements when the experiment ends (this also requires changing server_host to the proper address and provisioning an authentication as above).\ 
+Finally, the containers are stopped and another script is executed on the server (*process.sh*), to process the resulting measurements and pack these into a *smart_watts.tar.gz* file.
 This file includes the data for plotting and should be fetched from the server.
 
 
