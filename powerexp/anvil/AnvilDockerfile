@@ -17,13 +17,10 @@ RUN /root/.foundry/bin/foundryup
 
 EXPOSE 8545
 
-ENTRYPOINT ["anvil"]
-
-CMD [ \
+ENTRYPOINY ["anvil", \
   "--host", "0.0.0.0", \
   "--port", "8545", \
   "--chain-id", "1337", \
-  "--block-time", "15", \
   "--gas-limit", "30000000", \
   "--gas-price", "1", \
   "--block-base-fee-per-gas", "0", \
@@ -32,3 +29,5 @@ CMD [ \
   "--dump-state", "/var/lib/anvil/state.json", \
   "--disable-code-size-limit" \
 ]
+
+CMD ["--block-time", "12"]
