@@ -11,9 +11,7 @@ ANVIL_ID=$(
     --network aa-exp \
     -v /opt/powerexp/state/state.json:/var/lib/anvil/state.json \
     -p 8545:8545 \
-    anvil-debian-slim:local \
-    --block-time 12 \
-    --quiet
+    anvil-debian-slim:local 
 )
 
 ALTO_ID=$(
@@ -21,8 +19,7 @@ ALTO_ID=$(
     --name alto \
     --network aa-exp \
     -p 3000:3000 \
-    alto-debian-slim:local \
-    --log-level fatal
+    alto-debian-slim:local 
 )
 
 {

@@ -19,7 +19,7 @@ const SCA_NUMBER = 100;
 // time to wait between UserOps individual dispatches
 const THROTTLE_TIME = 25;
 // rounds of transfers
-const ROUNDS_TOTAL = 3;
+const ROUNDS_TOTAL = 35;
 const SCAS_PER_OWNER = 10;
 // Path can be overridden as first CLI argument:
 //   tsx script.ts simpleAccountAddresses.json

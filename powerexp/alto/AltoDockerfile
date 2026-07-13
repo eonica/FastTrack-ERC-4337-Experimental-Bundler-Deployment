@@ -54,4 +54,5 @@ RUN pnpm build:all
 EXPOSE 3000
 
 ENTRYPOINT ["./alto", "run"]
-CMD ["--config", "/app/alto-config.json"]
+CMD ["--config", "/app/alto-config.json", "--log-level", "fatal"]
+
