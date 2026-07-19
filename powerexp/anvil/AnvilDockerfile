@@ -21,7 +21,7 @@ CMD [ \
   "--host", "0.0.0.0", \
   "--port", "8545", \
   "--chain-id", "1337", \
-  "--block-time", "15", \
+  "--block-time", "12", \
   "--gas-limit", "30000000", \
   "--gas-price", "1", \
   "--block-base-fee-per-gas", "0", \
