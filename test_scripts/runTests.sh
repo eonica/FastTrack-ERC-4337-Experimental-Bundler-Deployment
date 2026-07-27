@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "Dockerized Tests"
+
 # Usage:
 #   ./runTests.sh [SCA_NUMBER] [THROTTLE_TIME] [ROUNDS_TOTAL] [BLOCK_TIME]
 #
