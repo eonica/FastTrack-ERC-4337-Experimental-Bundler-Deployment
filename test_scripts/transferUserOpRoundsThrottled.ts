@@ -17,28 +17,59 @@ const ENTRYPOINT = {
   version: "0.7" as const
 };
 
-// Test Configs:
-// Test#1 50 rounds; 100 SCA(UserOps); 25 throttle
-// Test#2 50 rounds; 100 SCA(UserOps); 50 throttle
-// Test#3 50 rounds; 100 SCA(UserOps); 100 throttle
-// Test#4 50 rounds; 75 SCA(UserOps); 25 throttle
-// Test#5 50 rounds; 50 SCA(UserOps); 25 throttle
-// Test#6 50 rounds; 25 SCA(UserOps); 25 throttle
-// Test#7 100 rounds; 100 SCA(UserOps); 25 throttle; Block time 6 seconds (to config in Anvil Dockerfile and re-build)
-// Test#8 300 rounds; 100 SCA(UserOps); 25 throttle; Block time 2 seconds (to config in Anvil Dockerfile and re-build)
-// Test#9 runIdleTest for idle measurement (no UserOps processing)
-
-
 // Number of SCAs exchanging tokens 
-const SCA_NUMBER = 100;
+const DEFAULT_SCA_NUMBER = 100;
 
 // time to wait between UserOps individual dispatches
-const THROTTLE_TIME = 25;
+const DEFAULT_THROTTLE_TIME = 25;
 
 // rounds of transfers
-const ROUNDS_TOTAL = 35;
+const DEFAULT_ROUNDS_TOTAL = 10;
 
 const SCAS_PER_OWNER = 10;
+
+function parseIntegerArgument(
+  value: string | undefined,
+  defaultValue: number,
+  name: string,
+  allowZero = false
+): number {
+  if (value === undefined) {
+    return defaultValue;
+  }
+
+  const parsed = Number(value);
+  const minimum = allowZero ? 0 : 1;
+
+  if (!Number.isSafeInteger(parsed) || parsed < minimum) {
+    throw new Error(
+      `${name} must be an integer greater than or equal to ${minimum}. Received: ${value}`
+    );
+  }
+
+  return parsed;
+}
+
+const [, , scaNumberArg, throttleTimeArg, roundsTotalArg] = process.argv;
+
+const SCA_NUMBER = parseIntegerArgument(
+  scaNumberArg,
+  DEFAULT_SCA_NUMBER,
+  "SCA_NUMBER"
+);
+
+const THROTTLE_TIME = parseIntegerArgument(
+  throttleTimeArg,
+  DEFAULT_THROTTLE_TIME,
+  "THROTTLE_TIME",
+  true
+);
+
+const ROUNDS_TOTAL = parseIntegerArgument(
+  roundsTotalArg,
+  DEFAULT_ROUNDS_TOTAL,
+  "ROUNDS_TOTAL"
+);
 
 // Path can be overridden as first CLI argument:
 //   tsx script.ts simpleAccountAddresses.json
@@ -72,6 +103,16 @@ function loadSimpleAccountAddresses(
 ): `0x${string}`[] {
   const raw = fs.readFileSync(filePath, "utf8");
   const parsed = JSON.parse(raw);
+
+  if (!Array.isArray(parsed)) {
+    throw new Error(`${filePath} must contain a JSON array.`);
+  }
+
+  if (parsed.length < limit) {
+    throw new Error(
+      `SCA_NUMBER is ${limit}, but ${filePath} contains only ${parsed.length} addresses.`
+    );
+  }
 
   return parsed.slice(0, limit).map((addr: unknown, i: number) => {
     if (typeof addr !== "string" || !/^0x[a-fA-F0-9]{40}$/.test(addr)) {
@@ -251,6 +292,12 @@ async function dumpConfirmedBlocks(
 // Main
 // -----------------------------
 async function main() {
+  console.log("=== Workload configuration ===");
+  console.log(`SCA_NUMBER:    ${SCA_NUMBER}`);
+  console.log(`THROTTLE_TIME: ${THROTTLE_TIME} ms`);
+  console.log(`ROUNDS_TOTAL:  ${ROUNDS_TOTAL}`);
+  console.log("==============================\n");
+
   // Public client
   const publicClient = createPublicClient({
     chain: {
