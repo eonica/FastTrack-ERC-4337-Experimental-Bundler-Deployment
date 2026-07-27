@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCA_NUMBER="${1:-0}" 
+THROTTLE_TIME="${2:-0}" 
+ROUNDS_TOTAL="${3:-0}" 
+BLOCK_TIME="${4:-0}"
+
+ARCHIVE_NAME="swresults_sca${SCA_NUMBER}_thr${THROTTLE_TIME}_rnd${ROUNDS_TOTAL}_bt${BLOCK_TIME}.tar.gz"
+
+echo "=== Processing configuration ==="
+echo "SCA_NUMBER:    $SCA_NUMBER"
+echo "THROTTLE_TIME: $THROTTLE_TIME ms"
+echo "ROUNDS_TOTAL:  $ROUNDS_TOTAL"
+echo "BLOCK_TIME:    $BLOCK_TIME seconds"
+echo "ARCHIVE:       $ARCHIVE_NAME"
+echo "================================"
+
 cd sensor_output
 
 if [ -d swatts ]; then
@@ -19,5 +34,11 @@ cd ..
 
 mv container_ids.txt ./sensor_output/
 cp config_file.json ./sensor_output/
-tar -czf smart_watts.tar.gz sensor_output
+
+rm -f "$ARCHIVE_NAME"
+tar -czf "$ARCHIVE_NAME" sensor_output
+
+echo "Created archive: $(pwd)/$ARCHIVE_NAME"
+
+# tar -czf smart_watts.tar.gz sensor_output
 
