@@ -15,12 +15,27 @@ const ENTRYPOINT = {
     version: "0.7"
 };
 // Number of SCAs exchanging tokens 
-const SCA_NUMBER = 100;
+const DEFAULT_SCA_NUMBER = 100;
 // time to wait between UserOps individual dispatches
-const THROTTLE_TIME = 25;
+const DEFAULT_THROTTLE_TIME = 25;
 // rounds of transfers
-const ROUNDS_TOTAL = 35;
+const DEFAULT_ROUNDS_TOTAL = 10;
 const SCAS_PER_OWNER = 10;
+function parseIntegerArgument(value, defaultValue, name, allowZero = false) {
+    if (value === undefined) {
+        return defaultValue;
+    }
+    const parsed = Number(value);
+    const minimum = allowZero ? 0 : 1;
+    if (!Number.isSafeInteger(parsed) || parsed < minimum) {
+        throw new Error(`${name} must be an integer greater than or equal to ${minimum}. Received: ${value}`);
+    }
+    return parsed;
+}
+const [, , scaNumberArg, throttleTimeArg, roundsTotalArg] = process.argv;
+const SCA_NUMBER = parseIntegerArgument(scaNumberArg, DEFAULT_SCA_NUMBER, "SCA_NUMBER");
+const THROTTLE_TIME = parseIntegerArgument(throttleTimeArg, DEFAULT_THROTTLE_TIME, "THROTTLE_TIME", true);
+const ROUNDS_TOTAL = parseIntegerArgument(roundsTotalArg, DEFAULT_ROUNDS_TOTAL, "ROUNDS_TOTAL");
 // Path can be overridden as first CLI argument:
 //   tsx script.ts simpleAccountAddresses.json
 const SIMPLE_ACCOUNT_ADDRESSES_FILE = "./created_accounts_salt_0x0A.json";
@@ -42,6 +57,12 @@ const ERC20_ADDRESS = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
 function loadSimpleAccountAddresses(filePath, limit) {
     const raw = fs.readFileSync(filePath, "utf8");
     const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+        throw new Error(`${filePath} must contain a JSON array.`);
+    }
+    if (parsed.length < limit) {
+        throw new Error(`SCA_NUMBER is ${limit}, but ${filePath} contains only ${parsed.length} addresses.`);
+    }
     return parsed.slice(0, limit).map((addr, i) => {
         if (typeof addr !== "string" || !/^0x[a-fA-F0-9]{40}$/.test(addr)) {
             throw new Error(`Invalid address at index ${i}: ${addr}`);
@@ -157,6 +178,11 @@ async function dumpConfirmedBlocks(publicClient, confirmedBlocks) {
 // Main
 // -----------------------------
 async function main() {
+    console.log("=== Workload configuration ===");
+    console.log(`SCA_NUMBER:    ${SCA_NUMBER}`);
+    console.log(`THROTTLE_TIME: ${THROTTLE_TIME} ms`);
+    console.log(`ROUNDS_TOTAL:  ${ROUNDS_TOTAL}`);
+    console.log("==============================\n");
     // Public client
     const publicClient = createPublicClient({
         chain: {
