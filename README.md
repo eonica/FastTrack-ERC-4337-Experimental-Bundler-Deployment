@@ -77,6 +77,8 @@ The confirmed blocks and their timestamps are logged on the client machine. The 
 Finally, the containers are stopped and another script is executed on the server (*process.sh*), to process the resulting measurements and pack these into a *smart_watts.tar.gz* file.
 This file includes the data for plotting and should be fetched from the server.
 
+Note (Update): *runTests.sh* has been modified to take the configuration options as parameters. A *runAllTests.sh* is provided to run a batch of tests. Some fixes might still be needed for the block time interval in the alto config file consistency.
+
 
 
 
