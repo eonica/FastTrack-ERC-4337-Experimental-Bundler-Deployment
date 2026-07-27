@@ -17,6 +17,17 @@ const ENTRYPOINT = {
   version: "0.7" as const
 };
 
+// Test Configs:
+// Test#1 50 rounds; 100 SCA(UserOps); 25 throttle
+// Test#2 50 rounds; 100 SCA(UserOps); 50 throttle
+// Test#3 50 rounds; 100 SCA(UserOps); 100 throttle
+// Test#4 50 rounds; 75 SCA(UserOps); 25 throttle
+// Test#5 50 rounds; 50 SCA(UserOps); 25 throttle
+// Test#6 50 rounds; 25 SCA(UserOps); 25 throttle
+// Test#7 100 rounds; 100 SCA(UserOps); 25 throttle; Block time 6 seconds (to config in Anvil Dockerfile and re-build)
+// Test#8 300 rounds; 100 SCA(UserOps); 25 throttle; Block time 2 seconds (to config in Anvil Dockerfile and re-build)
+// Test#9 runIdleTest for idle measurement (no UserOps processing)
+
 // Number of SCAs exchanging tokens 
 const DEFAULT_SCA_NUMBER = 100;
 
