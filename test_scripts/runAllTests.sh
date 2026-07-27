@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "Dockerized Tests"
+
 echo "Test#1 50 rounds; 100 SCA(UserOps); 25 throttle"
 ./runTests 100 25 1
 
