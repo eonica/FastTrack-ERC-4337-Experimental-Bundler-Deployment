@@ -40,4 +40,4 @@ node transferUserOpRoundsThrottled.js \
   "$ROUNDS_TOTAL"
   
 scp confirmed_blocks.csv server_host:/opt/powerexp/results/sensor_output/
-ssh server_host 'cd /opt/powerexp && ./stop_containers.sh && cd results && ./process.sh'
+ssh server_host "cd /opt/powerexp && ./stop_containers.sh && cd results && ./process.sh '$SCA_NUMBER' '$THROTTLE_TIME' '$ROUNDS_TOTAL' '${BLOCK_TIME:-12}'"
