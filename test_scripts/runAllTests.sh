@@ -3,29 +3,29 @@ set -euo pipefail
 
 echo "Dockerized Tests"
 
-echo "Test#1 50 rounds; 100 SCA(UserOps); 25 throttle"
-./runTests 100 25 1
+echo "Test#1 100 SCA(UserOps); 25 throttle 50 rounds;"
+./runTests 100 25 50
 
-echo "Test#2 50 rounds; 100 SCA(UserOps); 50 throttle"
+echo "Test#2 100 SCA(UserOps); 50 throttle; 50 rounds; " 
 ./runTests 100 50 50 
 
-echo "Test#3 50 rounds; 100 SCA(UserOps); 100 throttle"
+echo "Test#3  100 SCA(UserOps); 100 throttle; 50 rounds;"
 ./runTests 100 100 50 
 
-echo "Test#4 50 rounds; 75 SCA(UserOps); 25 throttle"
+echo "Test#4  75 SCA(UserOps); 25 throttle; 50 rounds;"
 ./runTests 75 25 50 
 
-echo "Test#5 50 rounds; 50 SCA(UserOps); 25 throttle"
+echo "Test#5 50 SCA(UserOps); 25 throttle; 50 rounds; "
 ./runTests 50 25 50 
 
-echo "Test#6 50 rounds; 25 SCA(UserOps); 25 throttle"
+echo "Test#6  25 SCA(UserOps); 25 throttle; 50 rounds;"
 ./runTests 25 25 50 
 
-echo "Test#7 100 rounds; 100 SCA(UserOps); 25 throttle; Block time 6 seconds"
-./runTests 100 25 50 6
+echo "Test#7 100 SCA(UserOps); 25 throttle; 100 rounds; Block time 6 seconds"
+./runTests 100 25 100 6
 
-echo "Test#8 300 rounds; 100 SCA(UserOps); 25 throttle; Block time 2 seconds"
-./runTests 100 25 50 2
+echo "Test#8 100 SCA(UserOps); 25 throttle; 300 rounds; Block time 2 seconds"
+./runTests 100 25 300 2
 
 echo "Test#9 runIdleTest for idle measurement (no UserOps processing)"
 ./runIdleTest
