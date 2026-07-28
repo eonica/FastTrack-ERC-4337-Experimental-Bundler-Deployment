@@ -45,7 +45,10 @@ RUN git clone https://github.com/pimlicolabs/alto.git /app
 
 WORKDIR /app
 
+# Configure different files for variable block interval (first default)
 COPY alto-config.json /app/alto-config.json
+COPY alto-config-6.json /app/alto-config-6.json
+COPY alto-config-2.json /app/alto-config-2.json
 
 RUN pnpm install
 
@@ -53,6 +56,6 @@ RUN pnpm build:all
 
 EXPOSE 3000
 
-ENTRYPOINT ["./alto", "run"]
-CMD ["--config", "/app/alto-config.json", "--log-level", "fatal"]
+ENTRYPOINT ["node", "src/esm/cli/alto.js"]
+CMD ["run", "--config", "/app/alto-config.json", "--log-level", "fatal"]
 
