@@ -3,7 +3,7 @@ set -euo pipefail
 
 echo "Dockerized Tests"
 
-echo "Test#1 100 SCA(UserOps); 25 throttle 50 rounds;"
+echo "Test#1 100 SCA(UserOps); 25 throttle; 50 rounds;"
 ./runTests 100 25 50
 
 echo "Test#2 100 SCA(UserOps); 50 throttle; 50 rounds; " 
@@ -12,7 +12,7 @@ echo "Test#2 100 SCA(UserOps); 50 throttle; 50 rounds; "
 echo "Test#3  100 SCA(UserOps); 100 throttle; 50 rounds;"
 ./runTests 100 100 50 
 
-echo "Test#4  75 SCA(UserOps); 25 throttle; 50 rounds;"
+echo "Test#4  75 SCA(UserOps); 25 throttle; 50 rounds;;"
 ./runTests 75 25 50 
 
 echo "Test#5 50 SCA(UserOps); 25 throttle; 50 rounds; "
