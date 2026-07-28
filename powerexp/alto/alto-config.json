@@ -10,6 +10,6 @@
   "max-gas-per-bundle": "30000000",
   "fixed-gas-limit-for-estimation": "30000000",
   "bundler-initial-comission": "0",
-  "block-time": 15000,
+  "block-time": 12000,
   "gas-price-bump": "1"
 }
