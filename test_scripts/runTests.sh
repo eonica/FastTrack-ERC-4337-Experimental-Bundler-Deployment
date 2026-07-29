@@ -7,7 +7,7 @@ echo "Dockerized Tests"
 #   ./runTests.sh [SCA_NUMBER] [THROTTLE_TIME] [ROUNDS_TOTAL] [BLOCK_TIME] [TEST_COUNTER]
 #
 
-if (( $# > 4 )); then
+if (( $# > 5 )); then
   echo "Usage: $0 [SCA_NUMBER] [THROTTLE_TIME] [ROUNDS_TOTAL] [BLOCK_TIME] [TEST_COUNTER]" >&2
   exit 1
 fi
