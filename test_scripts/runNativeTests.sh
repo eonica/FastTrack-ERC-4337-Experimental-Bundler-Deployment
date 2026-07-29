@@ -26,7 +26,7 @@ fi
 npx tsc -p ./tsconfig.json
 # ssh root@10.100.32.56 
 
-ssh proxmox "cd /opt/powerexp && ./start_native.sh '$BLOCK_TIME' && cd results && ./measure.sh" 
+ssh server_host "cd /opt/powerexp && ./start_native.sh '$BLOCK_TIME' && cd results && ./measure.sh" 
 
 sleep 3
 
@@ -36,4 +36,4 @@ node transferUserOpRoundsThrottled.js \
   "$ROUNDS_TOTAL"
 
 scp confirmed_blocks.csv proxmox:/opt/powerexp/results/sensor_output/
-ssh proxmox "cd /opt/powerexp && ./stop_native.sh && cd results && ./native_process.sh '$SCA_NUMBER' '$THROTTLE_TIME' '$ROUNDS_TOTAL' '${BLOCK_TIME:-12}' '$TEST_COUNTER'"
+ssh server_host "cd /opt/powerexp && ./stop_native.sh && cd results && ./native_process.sh '$SCA_NUMBER' '$THROTTLE_TIME' '$ROUNDS_TOTAL' '${BLOCK_TIME:-12}' '$TEST_COUNTER'"
