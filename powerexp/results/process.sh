@@ -5,8 +5,10 @@ SCA_NUMBER="${1:-0}"
 THROTTLE_TIME="${2:-0}" 
 ROUNDS_TOTAL="${3:-0}" 
 BLOCK_TIME="${4:-0}"
+TEST_COUNTER="${5:-0}"
 
-ARCHIVE_NAME="swresults_sca${SCA_NUMBER}_thr${THROTTLE_TIME}_rnd${ROUNDS_TOTAL}_bt${BLOCK_TIME}.tar.gz"
+ARCHIVE_NAME="swresults${TEST_COUNTER}_sca${SCA_NUMBER}_thr${THROTTLE_TIME}_rnd${ROUNDS_TOTAL}_bt${BLOCK_TIME}.tar.gz"
+
 
 echo "=== Processing configuration ==="
 echo "SCA_NUMBER:    $SCA_NUMBER"
