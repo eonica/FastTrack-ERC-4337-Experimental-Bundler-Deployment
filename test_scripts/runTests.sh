@@ -4,15 +4,11 @@ set -euo pipefail
 echo "Dockerized Tests"
 
 # Usage:
-#   ./runTests.sh [SCA_NUMBER] [THROTTLE_TIME] [ROUNDS_TOTAL] [BLOCK_TIME]
+#   ./runTests.sh [SCA_NUMBER] [THROTTLE_TIME] [ROUNDS_TOTAL] [BLOCK_TIME] [TEST_COUNTER]
 #
-# Example:
-#   ./runTests.sh
-#   ./runTests.sh 50 100 20
-#   ./runTests.sh 50 100 20 5
 
 if (( $# > 4 )); then
-  echo "Usage: $0 [SCA_NUMBER] [THROTTLE_TIME] [ROUNDS_TOTAL] [BLOCK_TIME]" >&2
+  echo "Usage: $0 [SCA_NUMBER] [THROTTLE_TIME] [ROUNDS_TOTAL] [BLOCK_TIME] [TEST_COUNTER]" >&2
   exit 1
 fi
 
