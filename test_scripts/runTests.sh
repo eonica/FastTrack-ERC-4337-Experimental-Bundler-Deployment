@@ -20,6 +20,7 @@ SCA_NUMBER="${1:-100}"
 THROTTLE_TIME="${2:-25}"
 ROUNDS_TOTAL="${3:-10}"
 BLOCK_TIME="${4:-}"
+TEST_COUNTER="${5:-0}"
 
 if [[ -n "$BLOCK_TIME" && ! "$BLOCK_TIME" =~ ^[1-9][0-9]*$ ]]; then 
   echo "Error: BLOCK_TIME must be a positive integer." >&2 
@@ -42,4 +43,4 @@ node transferUserOpRoundsThrottled.js \
   "$ROUNDS_TOTAL"
   
 scp confirmed_blocks.csv server_host:/opt/powerexp/results/sensor_output/
-ssh server_host "cd /opt/powerexp && ./stop_containers.sh && cd results && ./process.sh '$SCA_NUMBER' '$THROTTLE_TIME' '$ROUNDS_TOTAL' '${BLOCK_TIME:-12}'"
+ssh server_host "cd /opt/powerexp && ./stop_containers.sh && cd results && ./process.sh '$SCA_NUMBER' '$THROTTLE_TIME' '$ROUNDS_TOTAL' '${BLOCK_TIME:-12}' '$TEST_COUNTER'"
