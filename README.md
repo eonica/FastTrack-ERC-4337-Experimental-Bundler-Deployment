@@ -79,6 +79,22 @@ This file includes the data for plotting and should be fetched from the server.
 
 Note (Update): *runTests.sh* has been modified to take the configuration options as parameters. A *runAllTests.sh* is provided to run a batch of tests. Some fixes might still be needed for the block time interval in the alto config file consistency.
 
+## Scripts for archives summary extraction
+
+The test scripts folder includes two *PowReportSummary* python scripts for extracting a summary from the tar.gz archives, for the docker and native processed formats, respectively.
+The scripts can be run with the following optional parameters:
+
+`python3 [PowReportSummary_script]`\
+  `[--nodram] [--all-values] [--start-delay minutes] [--force] archive.tar.gz`
+
+The *--nodram* parameter should be used if the obtained results do not contain DRAM measurements.\
+The *--all-values* parameter should be used if all measurement values should be processed. This is particularly dedicated for idle state measurements. Otherwise, by default, the script will try to identify block intervals info in archives within which the processes were active and will only process those values.\
+The *--start-delay* parameter should be used to provide a custom delay in minutes from the starting block time of the above mentioned default processing interval. This can be used to skip calibration periods if that's the case.
+The *--force* parameter can be used to overwrite the output folder. By default the script will create a folder with the archive's name, extract its contents and process weighted averages of the power consumption, placed in *sensor_output/summary/PowerSummaryResults_[name_of_archive].csv*.
+
+For checking the computation accuracy the used weighted power consumption average formula is:\
+*SUMPRODUCT(B_START:B_STOP;A_START:A_STOP-A_PRESTART:A_PRESTOP)/SUMPRODUCT(A_START:A_STOP-A_PRESTART:A_PRESTOP)*\
+where column A of the data includes timestamps, column B of the data includes power measurements for the interval between the previous and current timestamp, START and STOP are the the time interval measurement positions (with PRESTART and PRESTOP being the immediate previous position). 
 
 
 
